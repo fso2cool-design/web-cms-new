@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useSyncExternalStore } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Phone,
@@ -22,12 +22,8 @@ import {
   FileText,
   HelpCircle,
   MessageSquare,
-  ShieldCheck,
-  LogIn,
-  Lock,
 } from 'lucide-react';
 import { SchoolProfile } from '@/types';
-import { useAuth } from '@/lib/firebase/auth-context';
 import { normalizeImageUrl } from '@/lib/image-utils';
 
 interface PublicNavbarProps {
@@ -36,15 +32,11 @@ interface PublicNavbarProps {
   onOpenAdmin: () => void;
 }
 
-const emptySubscribe = () => () => {};
-
 export function PublicNavbar({ schoolProfile, onOpenView, onOpenAdmin }: PublicNavbarProps) {
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [akademikDropdownOpen, setAkademikDropdownOpen] = useState(false);
   const [infoDropdownOpen, setInfoDropdownOpen] = useState(false);
-  const { appUser, isAdmin } = useAuth();
 
   const ppdbEnabled = schoolProfile.features?.ppdbEnabled ?? true;
   const galleryEnabled = schoolProfile.features?.galleryEnabled ?? true;
@@ -99,27 +91,6 @@ export function PublicNavbar({ schoolProfile, onOpenView, onOpenAdmin }: PublicN
               </div>
             )}
 
-            {/* Quick Admin Access indicator */}
-            {mounted && isAdmin ? (
-              <Link
-                id="btn-nav-admin-dashboard"
-                href="/admin"
-                className="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-900 px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all shadow-2xs shrink-0"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span>Panel Admin ({appUser?.displayName?.split(' ')[0] || 'Admin'})</span>
-              </Link>
-            ) : (
-              <Link
-                id="btn-nav-login"
-                href="/admin"
-                className="flex items-center gap-1 hover:text-white text-emerald-200/90 text-[11px] transition-colors shrink-0"
-                title="Akses Sistem"
-              >
-                <Lock className="w-3 h-3 shrink-0" />
-                <span>Masuk</span>
-              </Link>
-            )}
           </div>
         </div>
       </div>
@@ -133,18 +104,20 @@ export function PublicNavbar({ schoolProfile, onOpenView, onOpenAdmin }: PublicN
             onClick={() => handleNavClick('home')}
             id="brand-header"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-700 to-teal-800 text-white flex items-center justify-center font-black text-2xl shadow-md group-hover:scale-105 transition-transform duration-200 border border-emerald-500/30 shrink-0">
-              {schoolProfile.logo || schoolProfile.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
+            {schoolProfile.logo || schoolProfile.logoUrl ? (
+              <div className="h-11 sm:h-12 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={normalizeImageUrl(schoolProfile.logo || schoolProfile.logoUrl)}
-                  alt={schoolProfile.name}
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
+                  alt={schoolProfile.name || 'Logo Sekolah'}
+                  className="h-10 sm:h-11 w-auto max-w-[60px] sm:max-w-[76px] object-contain drop-shadow-xs"
                 />
-              ) : (
+              </div>
+            ) : (
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-700 to-teal-800 text-white flex items-center justify-center font-black text-2xl shadow-md group-hover:scale-105 transition-transform duration-200 border border-emerald-500/30 shrink-0">
                 <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 text-amber-300" />
-              )}
-            </div>
+              </div>
+            )}
             <div className="max-w-[130px] sm:max-w-[180px] md:max-w-[210px] xl:max-w-[260px] 2xl:max-w-[320px]">
               <span className="font-extrabold text-sm sm:text-base xl:text-lg text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors leading-tight line-clamp-2 block">
                 {schoolProfile.name || 'Portal Sekolah'}
@@ -567,17 +540,6 @@ export function PublicNavbar({ schoolProfile, onOpenView, onOpenAdmin }: PublicN
               <MessageSquare className="w-4 h-4 text-emerald-600" />
               <span>Kontak &amp; Lokasi</span>
             </button>
-          </div>
-
-          <div className="border-t border-slate-100 pt-3">
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-2.5 px-3 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 shadow-sm"
-            >
-              <LogIn className="w-4 h-4 text-amber-400" />
-              <span>{mounted && isAdmin ? 'Masuk Panel Admin' : 'Login Operator / Guru'}</span>
-            </Link>
           </div>
         </div>
       )}

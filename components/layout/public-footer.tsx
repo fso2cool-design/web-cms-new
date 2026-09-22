@@ -9,7 +9,6 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  ShieldCheck,
   ChevronRight,
   Heart,
 } from 'lucide-react';
@@ -31,33 +30,40 @@ export function PublicFooter({ schoolProfile, visitorAnalytics, onOpenView, onOp
   const faqEnabled = schoolProfile.features?.faqEnabled ?? true;
 
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800">
-      {/* Top Banner / Callout */}
+    <footer className="w-full bg-slate-900 text-white border-t border-slate-800">
+      {/* PPDB CTA Banner (Jika Aktif) */}
       {ppdbEnabled && (
-        <div className="bg-emerald-900/50 border-b border-emerald-800/60 py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-1 text-center md:text-left">
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                Penerimaan Peserta Didik Baru (PPDB) {schoolProfile.ppdbYear || ''}
-              </h3>
-              <p className="text-sm text-emerald-200">
-                Bergabunglah bersama keluarga besar {schoolProfile.name || 'Sekolah Kami'}. Kuota terbatas!
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/ppdb"
-                className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center gap-2"
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>Daftar PPDB Online</span>
-              </Link>
-              <Link
-                href="/ppdb?tab=status"
-                className="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-700 transition-colors"
-              >
-                Cek Status Pendaftaran
-              </Link>
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 border-b border-emerald-700/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  PPDB {schoolProfile.ppdbYear || ''} Telah Dibuka
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Bergabunglah Bersama Keluarga Besar {schoolProfile.name || 'Sekolah Kami'}
+                </h3>
+                <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 max-w-xl">
+                  Daftarkan putra-putri Anda secara online melalui portal resmi. Proses cepat, transparan, dan terintegrasi.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+                <Link
+                  href="/ppdb"
+                  className="px-5 py-2.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-900 font-bold text-xs shadow-md transition-all flex items-center gap-2"
+                >
+                  <span>Info &amp; Alur PPDB</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onOpenView('ppdb-apply')}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 border border-emerald-400/30"
+                >
+                  <span>Daftar Sekarang</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -69,18 +75,20 @@ export function PublicFooter({ schoolProfile, visitorAnalytics, onOpenView, onOp
           {/* Kolom 1: Identitas Sekolah (Spans 2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white flex items-center justify-center font-black shadow overflow-hidden">
-                {schoolProfile.logo || schoolProfile.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+              {schoolProfile.logo || schoolProfile.logoUrl ? (
+                <div className="h-10 sm:h-11 flex items-center justify-center shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={normalizeImageUrl(schoolProfile.logo || schoolProfile.logoUrl)}
-                    alt={schoolProfile.name}
-                    className="w-8 h-8 object-contain"
+                    alt={schoolProfile.name || 'Logo Sekolah'}
+                    className="h-9 sm:h-10 w-auto max-w-[56px] object-contain drop-shadow-xs"
                   />
-                ) : (
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white flex items-center justify-center font-black shadow overflow-hidden shrink-0">
                   <GraduationCap className="w-6 h-6 text-amber-300" />
-                )}
-              </div>
+                </div>
+              )}
               <div>
                 <h4 className="text-lg font-extrabold text-white tracking-tight">
                   {schoolProfile.name || 'Portal Sekolah'}
@@ -329,16 +337,6 @@ export function PublicFooter({ schoolProfile, visitorAnalytics, onOpenView, onOp
                 </ul>
               );
             })()}
-
-            <div className="pt-3 border-t border-slate-800">
-              <Link
-                href="/admin"
-                className="w-full py-2 px-3 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-slate-700"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Panel Manajemen Sekolah</span>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
