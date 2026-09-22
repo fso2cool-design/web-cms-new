@@ -1,0 +1,166 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Deny Fallback
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email in ['fso2cool@gmail.com', 'letithaven@gmail.com', 'alumnimansbt@gmail.com', 'ponpesalaska@gmail.com'] ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['superadmin', 'admin', 'editor', 'kepala_sekolah'])
+      );
+    }
+
+    // Connection check document per skill requirements
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // School Profile
+    match /schoolProfile/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // News
+    match /news/{newsId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Announcements
+    match /announcements/{announcementId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Events
+    match /events/{eventId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Teachers
+    match /teachers/{teacherId} {
+      allow get, list: if resource.data.isActive == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Achievements
+    match /achievements/{achievementId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Facilities
+    match /facilities/{facilityId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Extracurriculars
+    match /extracurriculars/{extracurricularId} {
+      allow get, list: if resource.data.isActive == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Galleries
+    match /galleries/{galleryId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Documents
+    match /documents/{documentId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // FAQs
+    match /faqs/{faqId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Contact Messages
+    match /contactMessages/{messageId} {
+      allow create: if request.resource.data.name is string &&
+                       request.resource.data.name.size() > 0 &&
+                       request.resource.data.name.size() <= 150 &&
+                       request.resource.data.email is string &&
+                       request.resource.data.email.size() <= 150 &&
+                       request.resource.data.message is string &&
+                       request.resource.data.message.size() <= 3000;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // PPDB Applicants
+    match /ppdbApplicants/{applicantId} {
+      allow create: if request.resource.data.registrationNumber is string &&
+                       request.resource.data.fullName is string &&
+                       request.resource.data.fullName.size() <= 150 &&
+                       request.resource.data.nisn is string &&
+                       request.resource.data.status in ['submitted', 'draft'];
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    // Reviews (Ulasan Madrasah)
+    match /reviews/{reviewId} {
+      // Public can read approved reviews, admin can read all
+      allow get, list: if resource.data.status == 'approved' || isAdmin();
+      // Public can create pending reviews with basic validation
+      allow create: if request.resource.data.name is string &&
+                       request.resource.data.name.size() > 0 &&
+                       request.resource.data.name.size() <= 150 &&
+                       request.resource.data.rating is number &&
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 5 &&
+                       request.resource.data.comment is string &&
+                       request.resource.data.comment.size() > 0 &&
+                       request.resource.data.comment.size() <= 2000 &&
+                       request.resource.data.status == 'pending';
+      // Only admin can approve, reject, update or delete reviews
+      allow update, delete: if isAdmin();
+    }
+
+    // Site Analytics (Statistik Pengunjung)
+    match /siteAnalytics/{docId} {
+      // Public can read aggregate visitor counts
+      allow read: if true;
+      // Allow visitor session counter updates and admin management
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+  }
+}

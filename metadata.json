@@ -1,0 +1,6 @@
+{
+  "name": "CMS Website Sekolah",
+  "description": "CMS Website Sekolah Indonesia modern, profesional, dan responsif dengan portal publik, manajemen konten, dan PPDB online.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
